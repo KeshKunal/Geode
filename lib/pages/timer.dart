@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 class TimerScreen extends StatefulWidget {
   const TimerScreen({super.key});
@@ -19,12 +20,8 @@ class _TimerScreenState extends State<TimerScreen> {
 
   // --- FRAME ANIMATION VARIABLES ---
 
-  // IMPORTANT: Set this to the total number of frames you extracted from your GIF.
-  // For example, if you have frame_0.png to frame_29.png, this should be 30.
-  final int _totalFrames = 424; // <<<--- UPDATE THIS NUMBER
-
-  // This will hold the current frame number to display.
-  int _currentFrame = 0;
+  final int _totalFrames = 427;
+  int _currentFrame = 0; // holds current frame
 
   // --- LIFECYCLE METHODS ---
 
@@ -38,18 +35,18 @@ class _TimerScreenState extends State<TimerScreen> {
   // --- TIMER LOGIC ---
 
   void _startTimer() {
+    HapticFeedback.lightImpact();
     setState(() {
       _isPlaying = true;
       _isCompleted = false;
       _remainingTime = _totalDuration;
-      _currentFrame = 0; // Start from the first frame
+      _currentFrame = 0;
     });
 
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_remainingTime.inSeconds > 0) {
         setState(() {
           _remainingTime = _remainingTime - const Duration(seconds: 1);
-          // Every second, we update which frame of the animation to show.
           _updateImageFrame();
         });
       } else {
@@ -57,7 +54,6 @@ class _TimerScreenState extends State<TimerScreen> {
         setState(() {
           _isPlaying = false;
           _isCompleted = true;
-          // Show the last frame when completed.
           _currentFrame = _totalFrames - 1;
         });
       }
@@ -65,6 +61,7 @@ class _TimerScreenState extends State<TimerScreen> {
   }
 
   void _giveUp() {
+    HapticFeedback.lightImpact();
     _timer?.cancel();
     setState(() {
       _isPlaying = false;
@@ -81,9 +78,6 @@ class _TimerScreenState extends State<TimerScreen> {
     // Calculate the progress of the timer (a value from 0.0 to 1.0).
     double progress =
         1.0 - (_remainingTime.inSeconds / _totalDuration.inSeconds);
-
-    // Calculate which frame corresponds to the current progress.
-    // We use .floor() to get a whole number.
     _currentFrame = (progress * (_totalFrames - 1)).floor();
   }
 
@@ -106,7 +100,7 @@ class _TimerScreenState extends State<TimerScreen> {
         : 0.0;
 
     return Scaffold(
-      backgroundColor: const Color(0xFF4A7C59),
+      backgroundColor: const Color(0xFF1F1D2B),
       body: SafeArea(
         child: Center(
           child: Padding(
@@ -115,17 +109,16 @@ class _TimerScreenState extends State<TimerScreen> {
               mainAxisAlignment: MainAxisAlignment.spaceAround,
               children: [
                 _buildHeader(),
-                // This is your UI from before, but now it's powered by our new logic.
                 Stack(
                   alignment: Alignment.center,
                   children: [
                     SizedBox(
-                      width: 250,
-                      height: 250,
+                      width: 255,
+                      height: 255,
                       child: CircularProgressIndicator(
                         value: progress,
                         strokeWidth: 8,
-                        color: Colors.white,
+                        color: Color(0xFF2E7D32),
                         backgroundColor: Colors.white.withOpacity(0.3),
                         strokeCap: StrokeCap.round,
                       ),
@@ -133,13 +126,11 @@ class _TimerScreenState extends State<TimerScreen> {
                     Padding(
                       padding: const EdgeInsets.all(12.0),
                       child: ClipOval(
-                        // The Image.asset now dynamically builds the path to the correct frame!
                         child: Image.asset(
                           "assets/images/frames/frame_($_currentFrame).gif",
-                          width: 220,
-                          height: 220,
+                          width: 240,
+                          height: 240,
                           fit: BoxFit.cover,
-                          // This helps prevent flickering between frames.
                           gaplessPlayback: true,
                         ),
                       ),
@@ -161,7 +152,7 @@ class _TimerScreenState extends State<TimerScreen> {
         Text(
           _isCompleted ? "Growth Achieved!" : "Stay Focused",
           style: const TextStyle(
-            color: Colors.white,
+            color: Color.fromARGB(255, 253, 253, 253),
             fontSize: 28,
             fontWeight: FontWeight.bold,
           ),
@@ -170,7 +161,7 @@ class _TimerScreenState extends State<TimerScreen> {
         Text(
           "Each moment of focus cultivates your grove.",
           style: TextStyle(
-            color: Colors.white.withOpacity(0.8),
+            color: Color(0xFFE0E0E0).withOpacity(0.8),
             fontSize: 16,
             fontStyle: FontStyle.italic,
           ),
@@ -194,14 +185,15 @@ class _TimerScreenState extends State<TimerScreen> {
         Slider(
           value: _totalDuration.inMinutes.toDouble(),
           min: 1,
-          max: 120,
-          divisions: 119,
+          max: 60,
+          divisions: 59,
           label: "${_totalDuration.inMinutes} minutes",
-          activeColor: Colors.white,
-          inactiveColor: Colors.white.withOpacity(0.3),
+          activeColor: Color(0xFF64FFDA),
+          inactiveColor: Colors.white.withOpacity(0.7),
           onChanged: _isPlaying
               ? null
               : (value) {
+                  HapticFeedback.selectionClick();
                   setState(() {
                     _totalDuration = Duration(minutes: value.toInt());
                     _remainingTime = _totalDuration;
@@ -214,7 +206,8 @@ class _TimerScreenState extends State<TimerScreen> {
           height: 50,
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
-              backgroundColor: _isPlaying ? Colors.red[300] : Colors.white,
+              backgroundColor:
+                  _isPlaying ? Color(0xFFFF756D) : const Color(0xFF2E7D32),
               foregroundColor:
                   _isPlaying ? Colors.white : const Color(0xFF4A7C59),
               shape: RoundedRectangleBorder(
@@ -222,10 +215,12 @@ class _TimerScreenState extends State<TimerScreen> {
               ),
             ),
             onPressed: _isPlaying ? _giveUp : _startTimer,
-            child: Text(
-              _isPlaying ? "Give Up" : "Start Focusing",
-              style: const TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
-            ),
+            child: Text(_isPlaying ? "Give Up" : "Start Focusing",
+                style: const TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFFE0E0E0),
+                )),
           ),
         ),
       ],

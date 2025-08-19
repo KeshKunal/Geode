@@ -46,3 +46,4 @@ app.*.map.json
 
 #test files
 test.dart
+/assets/images/frames/
