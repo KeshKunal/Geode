@@ -47,7 +47,6 @@ class Dashboard extends StatelessWidget {
           ),
         ),
       ),
-      bottomNavigationBar: const BottomNavBar(),
     );
   }
 }

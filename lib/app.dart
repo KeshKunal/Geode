@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter/material.dart';
 import 'package:geode/screens/dashboard/dashboard_test.dart';
+import 'package:geode/screens/main_screen.dart';
 import 'package:geode/screens/timer.dart';
 import 'core/constants/app_colors.dart';
 import 'package:geode/screens/dashboard/dashboard.dart';
@@ -19,7 +20,7 @@ class GeodeApp extends StatelessWidget {
         fontFamily: 'Poppins',
         useMaterial3: true,
       ),
-      home: const DashboardPage(),
+      home: const MainScreen(),
     );
   }
 }
