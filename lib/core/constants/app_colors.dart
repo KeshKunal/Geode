@@ -9,3 +9,11 @@ class AppColors {
   static const Color highlight = Color(0xFF64FFDA);
   static const Color darkGrey = Color(0xFF252836);
 }
+List<Color> progressCardGradientList = [
+  //grenn
+  const Color(0xFF87EFB5),
+  //blue
+  const Color(0xFF8ABFFC),
+  //pink
+  const Color(0xFFEEB2E8),
+];
