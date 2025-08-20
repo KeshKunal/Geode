@@ -33,12 +33,12 @@ dependencies:
   video_player: ^2.8.6
   gif: ^1.0.4
   cached_network_image: ^3.3.0
-
-  # The following adds the Cupertino Icons font to your application.
-  # Use with the CupertinoIcons class for iOS style icons.
   cupertino_icons: ^1.0.8
   flutter_gif: ^0.0.4
   audioplayers: ^6.0.0
+  permission_handler: ^11.3.1 # For requesting permissions
+  android_alarm_manager_plus: ^3.0.4 # For time-based scheduling
+  flutter_background_geolocation: ^4.16.1 # For geofencing (highly configurable)
 
 dev_dependencies:
   flutter_test:
@@ -67,6 +67,7 @@ flutter:
     - assets/images/
     - assets/images/frames/
     - assets/videos/
+    - assets/fonts/
     
   # An image asset can refer to one or more resolution-specific "variants", see
   # https://flutter.dev/to/resolution-aware-images
@@ -79,17 +80,13 @@ flutter:
   # "family" key with the font family name, and a "fonts" key with a
   # list giving the asset and other descriptors for the font. For
   # example:
-  # fonts:
-  #   - family: Schyler
-  #     fonts:
-  #       - asset: fonts/Schyler-Regular.ttf
-  #       - asset: fonts/Schyler-Italic.ttf
-  #         style: italic
-  #   - family: Trajan Pro
-  #     fonts:
-  #       - asset: fonts/TrajanPro.ttf
-  #       - asset: fonts/TrajanPro_Bold.ttf
-  #         weight: 700
-  #
+  fonts:
+    - family: Poppins
+      fonts:
+        - asset: assets/fonts/Poppins-Regular.ttf
+        - asset: assets/fonts/Poppins-Medium.ttf
+          weight: 500
+        - asset: assets/fonts/Poppins-Bold.ttf
+          weight: 700
   # For details regarding fonts from package dependencies,
   # see https://flutter.dev/to/font-from-package

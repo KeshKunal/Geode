@@ -27,7 +27,6 @@ class _TimerScreenState extends State<TimerScreen> {
 
   @override
   void dispose() {
-    // Clean up the timer when the widget is removed.
     _timer?.cancel();
     super.dispose();
   }
@@ -67,7 +66,6 @@ class _TimerScreenState extends State<TimerScreen> {
       _isPlaying = false;
       _isCompleted = false;
       _remainingTime = _totalDuration;
-      // Reset to the beginning.
       _currentFrame = 0;
     });
   }
@@ -161,7 +159,7 @@ class _TimerScreenState extends State<TimerScreen> {
         Text(
           "Each moment of focus cultivates your grove.",
           style: TextStyle(
-            color: Color(0xFFE0E0E0).withOpacity(0.8),
+            color: Color(0xFFE0E0E0).withOpacity(0.7),
             fontSize: 16,
             fontStyle: FontStyle.italic,
           ),
@@ -179,6 +177,7 @@ class _TimerScreenState extends State<TimerScreen> {
             color: Colors.white,
             fontSize: 60,
             fontWeight: FontWeight.w300,
+            letterSpacing: 1.5,
           ),
         ),
         const SizedBox(height: 20),
@@ -187,9 +186,12 @@ class _TimerScreenState extends State<TimerScreen> {
           min: 1,
           max: 60,
           divisions: 59,
-          label: "${_totalDuration.inMinutes} minutes",
+          // label: "${_totalDuration.inMinutes} minutes",
           activeColor: Color(0xFF64FFDA),
-          inactiveColor: Colors.white.withOpacity(0.7),
+          inactiveColor: Colors.white.withOpacity(0.3),
+          thumbColor: const Color(0xFF64FFDA),
+          overlayColor:
+              WidgetStateProperty.all(const Color(0xFF64FFDA).withOpacity(0.2)),
           onChanged: _isPlaying
               ? null
               : (value) {
@@ -200,10 +202,31 @@ class _TimerScreenState extends State<TimerScreen> {
                   });
                 },
         ),
+        // Timer label below slider
+        Text(
+          "${_totalDuration.inMinutes} minutes",
+          style: TextStyle(
+            color: Colors.white.withOpacity(0.8),
+            fontSize: 16,
+          ),
+        ),
         const SizedBox(height: 20),
-        SizedBox(
+        Container(
           width: 200,
           height: 50,
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(15),
+            boxShadow: [
+              BoxShadow(
+                color: (_isPlaying
+                        ? const Color(0xFFFF756D)
+                        : const Color(0xFF2E7D32))
+                    .withOpacity(0.3),
+                blurRadius: 8,
+                offset: const Offset(0, 4),
+              ),
+            ],
+          ),
           child: ElevatedButton(
             style: ElevatedButton.styleFrom(
               backgroundColor:

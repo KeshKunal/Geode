@@ -1,0 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="accessibility_service_description">Geode uses this accessibility service to help you stay focused by monitoring app usage during focus sessions. This allows us to track time spent on different apps, helping you build better productivity habits. We only collect app usage data during active focus sessions to support your mindful productivity goals.</string>
+</resources>

@@ -46,4 +46,10 @@ app.*.map.json
 
 #test files
 test.dart
-/assets/images/frames/
+#ignore frames file
+# Ignore frames_test directory
+assets/images/frames_test/
+# Ignore new changes in frames directory
+assets/images/frames/*
+# Keep the previously committed frames
+!assets/images/frames/.gitkeep
