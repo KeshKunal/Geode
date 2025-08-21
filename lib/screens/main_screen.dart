@@ -16,12 +16,20 @@ class MainScreen extends StatefulWidget {
 class _MainScreenState extends State<MainScreen> {
   int _SelectedIndex = 0;
 
-  static const List<Widget> _widgetOptions = <Widget>[
-    Dashboard(),
-    TimerScreen(),
-    GroveScreen(),
-    RulesScreen(),
+  final List<Widget> _androidPages = [
+    const Dashboard(),
+    const TimerScreen(),
+    const GroveScreen(),
+    const RulesScreen(),
   ];
+
+  final List<Widget> _iosPages = [
+    const Dashboard(),
+    const TimerScreen(),
+    const GroveScreen(),
+  ];
+
+  List<Widget> get _pages => Platform.isAndroid ? _androidPages : _iosPages;
 
   void _onItemTapped(int index) {
     setState(() {
@@ -34,7 +42,7 @@ class _MainScreenState extends State<MainScreen> {
     return Scaffold(
       body: IndexedStack(
         index: _SelectedIndex,
-        children: _widgetOptions,
+        children: _pages,
       ),
       bottomNavigationBar: BottomNavBar(
         currentIndex: _SelectedIndex,
