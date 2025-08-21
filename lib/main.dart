@@ -3,6 +3,9 @@ import 'package:flutter/foundation.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:geode/services/blocker_provider.dart';
 import 'package:geode/services/grove_provider.dart';
+import 'package:hive/hive.dart';
+import 'package:hive_flutter/adapters.dart';
+import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 import 'services/blocker_service.dart';
 import 'models/task.dart';
@@ -24,6 +27,10 @@ void main() async {
   if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
     await AndroidAlarmManager.initialize();
   }
+  await Hive.initFlutter();
+    // Register the generated adapters
+  Hive.registerAdapter(TaskStatusAdapter());
+  Hive.registerAdapter(TaskAdapter());
 
   runApp(
     MultiProvider(

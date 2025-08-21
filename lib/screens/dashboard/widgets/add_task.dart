@@ -13,8 +13,17 @@ class AddTask extends StatefulWidget {
 }
 
 class _AddTaskState extends State<AddTask> {
+  final TextEditingController _nameController = TextEditingController();
+  final TextEditingController _detailsController = TextEditingController();
   bool _isPriority = false;
   DateTime? _selectedDate;
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _detailsController.dispose();
+    super.dispose();
+  }
 
   Future<void> _selectDate(BuildContext context) async {
     final DateTime? picked = await showDatePicker(
@@ -67,22 +76,23 @@ class _AddTaskState extends State<AddTask> {
             topRight: Radius.circular(20),
           )),
       child: Column(
-        mainAxisSize: MainAxisSize.min,
-        crossAxisAlignment: CrossAxisAlignment.start,
+        mainAxisSize: MainAxisSize.min, 
         children: [
           const Text("Add New Task", style: AppTextStyles.subheading),
           const SizedBox(height: 20),
-          const TextField(
-            decoration: InputDecoration(
+          TextField(
+            controller: _nameController, 
+            decoration: const InputDecoration(
               labelText: 'Task Name',
               border: OutlineInputBorder(),
               labelStyle: TextStyle(color: Colors.grey),
             ),
             style: AppTextStyles.body,
           ),
-          const SizedBox(height: 15),
-          const TextField(
-            decoration: InputDecoration(
+          const SizedBox(height: 20),
+          TextField(
+            controller: _detailsController, 
+            decoration: const InputDecoration(
               labelText: 'Notes (Optional)',
               border: OutlineInputBorder(),
               labelStyle: TextStyle(color: Colors.grey),
@@ -123,7 +133,7 @@ class _AddTaskState extends State<AddTask> {
                   });
                 },
                 activeColor: const Color(0xFFFF5252),
-                trackOutlineColor: WidgetStateProperty.all(Colors.grey),
+                trackOutlineColor: MaterialStateProperty.all(Colors.grey),
               ),
             ],
           ),
@@ -136,24 +146,23 @@ class _AddTaskState extends State<AddTask> {
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
               onPressed: () {
-                final taskName = _nameController.text;
-                final taskDetails = _detailsController.text;
-                final isPriority = _isPriority;
-
-                if (taskName.isEmpty) {
+                if (_nameController.text.isEmpty || _selectedDate == null) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                        content: Text('Please fill required fields')),
+                  );
                   return;
                 }
 
                 final newTask = Task(
-        name: taskName,
-        details: taskDetails,
-        deadline: DateTime.now().add(const Duration(days: 2)), // Placeholder deadline for now
-        isPriority: isPriority,
-      );
+                  name: _nameController.text,
+                  details: _detailsController.text,
+                  deadline: _selectedDate!,
+                  isPriority: _isPriority,
+                );
 
-      Provider.of<TaskManager>(context, listen: false).addTask(newTask);
-
-       Navigator.pop(context);
+                context.read<TaskManager>().addTask(newTask);
+                Navigator.pop(context);
               },
               child: const Text(
                 "Create",

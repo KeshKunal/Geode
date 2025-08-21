@@ -1,6 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:geode/core/constants/app_colors.dart';
 import 'package:geode/core/constants/app_text_styles.dart';
+import 'package:geode/models/task.dart';
+import 'package:geode/providers/task_manager.dart';
 import 'package:geode/screens/dashboard/priority_zone.dart';
 import 'package:geode/screens/dashboard/widgets/daily_goal.dart';
 import 'package:geode/screens/dashboard/widgets/header.dart';
@@ -10,6 +12,7 @@ import 'package:geode/screens/dashboard/widgets/task_horizon.dart';
 import 'package:geode/screens/dashboard/widgets/task_summary_card.dart';
 import 'package:geode/screens/dashboard/widgets/bottom_nav_bar.dart';
 import 'package:geode/screens/dashboard/widgets/add_task.dart';
+import 'package:provider/provider.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -64,10 +67,24 @@ class _DashboardScreenState extends State<Dashboard>
         onPressed: () {
           showModalBottomSheet(
             context: context,
-            isScrollControlled:
-                true, // Allows the sheet to be taller than half the screen
+            isScrollControlled: true,
             backgroundColor: Colors.transparent,
-            builder: (context) => const AddTask(),
+            builder: (context) => Padding(
+              padding: EdgeInsets.only(
+                bottom: MediaQuery.of(context).viewInsets.bottom,
+              ),
+              child: SingleChildScrollView(
+                child: Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: const BoxDecoration(
+                    color: AppColors.darkGrey,
+                    borderRadius:
+                        BorderRadius.vertical(top: Radius.circular(20)),
+                  ),
+                  child: const AddTask(),
+                ),
+              ),
+            ),
           );
         },
         backgroundColor: AppColors.highlight,
@@ -117,25 +134,40 @@ class _DashboardScreenState extends State<Dashboard>
           child: const PriorityTask(),
         ),
         const SizedBox(height: 20),
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
-          children: [
-            TaskSummaryCard(
-              count: "16",
-              label: "To Do",
-              color: Colors.orange.shade300,
-            ),
-            TaskSummaryCard(
-              count: "32",
-              label: "In Progress",
-              color: Colors.blue.shade300,
-            ),
-            TaskSummaryCard(
-              count: "8",
-              label: "Completed",
-              color: Colors.green.shade300,
-            ),
-          ],
+        Consumer<TaskManager>(
+          builder: (context, taskManager, child) {
+            // Filter tasks based on their status
+            final toDoTasks = taskManager.tasks
+                .where((task) => task.status == TaskStatus.toDo)
+                .toList();
+            final inProgressTasks = taskManager.tasks
+                .where((task) => task.status == TaskStatus.inProgress)
+                .toList();
+            final completedTasks = taskManager.tasks
+                .where((task) => task.status == TaskStatus.completed)
+                .toList();
+
+            return Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                TaskSummaryCard(
+                  count: toDoTasks.length.toString(),
+                  label: "To Do",
+                  color: Colors.orange.shade300,
+                ),
+                TaskSummaryCard(
+                  count: inProgressTasks.length.toString(),
+                  label: "In Progress",
+                  color: Colors.blue.shade300,
+                ),
+                TaskSummaryCard(
+                  count: completedTasks.length.toString(),
+                  label: "Completed",
+                  color: Colors.green.shade300,
+                ),
+              ],
+            );
+          },
         ),
         const SizedBox(height: 30),
         ElevatedButton(
