@@ -4,6 +4,7 @@ import 'timer.dart';
 import 'grove_screen.dart';
 import 'rules_screen.dart';
 import 'dashboard/widgets/bottom_nav_bar.dart';
+import 'dart:io' show Platform;
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});

@@ -1,6 +1,10 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:geode/services/grove_provider.dart';
+import 'package:provider/provider.dart';
+import 'package:geode/services/blocker_provider.dart';
+import 'package:geode/services/blocker_service.dart';
 
 class TimerScreen extends StatefulWidget {
   const TimerScreen({super.key});
@@ -34,6 +38,8 @@ class _TimerScreenState extends State<TimerScreen> {
   // --- TIMER LOGIC ---
 
   void _startTimer() {
+    Provider.of<BlockerProvider>(context, listen: false).activateBlocker();
+
     HapticFeedback.lightImpact();
     setState(() {
       _isPlaying = true;
@@ -50,6 +56,10 @@ class _TimerScreenState extends State<TimerScreen> {
         });
       } else {
         _timer?.cancel();
+        Provider.of<GroveProvider>(context, listen: false).addSession();
+        Provider.of<BlockerProvider>(context, listen: false)
+            .deactivateBlocker();
+
         setState(() {
           _isPlaying = false;
           _isCompleted = true;
@@ -60,6 +70,8 @@ class _TimerScreenState extends State<TimerScreen> {
   }
 
   void _giveUp() {
+    Provider.of<BlockerProvider>(context, listen: false).deactivateBlocker();
+
     HapticFeedback.lightImpact();
     _timer?.cancel();
     setState(() {
@@ -160,7 +172,7 @@ class _TimerScreenState extends State<TimerScreen> {
           "Each moment of focus cultivates your grove.",
           style: TextStyle(
             color: Color(0xFFE0E0E0).withOpacity(0.7),
-            fontSize: 16,
+            fontSize: 13,
             fontStyle: FontStyle.italic,
           ),
         ),
