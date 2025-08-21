@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:geode/core/constants/app_colors.dart';
 import 'dart:io';
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class BottomNavBar extends StatelessWidget {
   final int currentIndex;
@@ -73,7 +74,7 @@ class BottomNavBar extends StatelessWidget {
           unselectedFontSize: 12,
           elevation: 0,
           showUnselectedLabels: true,
-          items:  Platform.isAndroid ? androidItems : iosItems,
+          items:  kIsWeb ? androidItems : (Platform.isAndroid ? androidItems : iosItems),
           currentIndex: currentIndex, // Use the passed currentIndex parameter
           onTap: onTap, // Use the passed onTap callback
         ),

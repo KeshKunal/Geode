@@ -5,6 +5,7 @@ import 'grove_screen.dart';
 import 'rules_screen.dart';
 import 'dashboard/widgets/bottom_nav_bar.dart';
 import 'dart:io' show Platform;
+import 'package:flutter/foundation.dart' show kIsWeb;
 
 class MainScreen extends StatefulWidget {
   const MainScreen({super.key});
@@ -14,7 +15,7 @@ class MainScreen extends StatefulWidget {
 }
 
 class _MainScreenState extends State<MainScreen> {
-  int _SelectedIndex = 0;
+  int _selectedIndex = 0;
 
   final List<Widget> _androidPages = [
     const Dashboard(),
@@ -29,11 +30,16 @@ class _MainScreenState extends State<MainScreen> {
     const GroveScreen(),
   ];
 
-  List<Widget> get _pages => Platform.isAndroid ? _androidPages : _iosPages;
+  List<Widget> get _pages {
+    if (kIsWeb) {
+      return _androidPages; // Or _iosPages based on your preference for web
+    }
+    return Platform.isAndroid ? _androidPages : _iosPages;
+  }
 
   void _onItemTapped(int index) {
     setState(() {
-      _SelectedIndex = index;
+      _selectedIndex = index;
     });
   }
 
@@ -41,11 +47,11 @@ class _MainScreenState extends State<MainScreen> {
   Widget build(BuildContext context) {
     return Scaffold(
       body: IndexedStack(
-        index: _SelectedIndex,
+        index: _selectedIndex,
         children: _pages,
       ),
       bottomNavigationBar: BottomNavBar(
-        currentIndex: _SelectedIndex,
+        currentIndex: _selectedIndex,
         onTap: _onItemTapped,
       ),
     );

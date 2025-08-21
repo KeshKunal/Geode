@@ -28,12 +28,13 @@ class PriorityTask extends StatelessWidget {
           const SizedBox(height: 10),
           Row(
             children: [
-              const Expanded(
+              Expanded(
                 child: LinearProgressIndicator(
                   value: 0.6, // 3/5
                   backgroundColor: Colors.white24,
                   valueColor: AlwaysStoppedAnimation<Color>(AppColors.highlight),
                   minHeight: 10,
+                  borderRadius: BorderRadius.circular(6.0),
                 ),
               ),
               const SizedBox(width: 10),
