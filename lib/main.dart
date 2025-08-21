@@ -5,6 +5,8 @@ import 'package:geode/services/blocker_provider.dart';
 import 'package:geode/services/grove_provider.dart';
 import 'package:provider/provider.dart';
 import 'services/blocker_service.dart';
+import 'models/task.dart';
+import 'providers/task_manager.dart';
 import 'app.dart';
 
 // @pragma('vm:entry-point')
@@ -26,6 +28,7 @@ void main() async {
   runApp(
     MultiProvider(
       providers: [
+        ChangeNotifierProvider(create: (_) => TaskManager()),
         ChangeNotifierProvider(create: (_) => BlockerProvider()),
         ChangeNotifierProvider(create: (_) => GroveProvider()),
       ],

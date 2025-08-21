@@ -6,8 +6,10 @@ import 'package:geode/screens/dashboard/widgets/daily_goal.dart';
 import 'package:geode/screens/dashboard/widgets/header.dart';
 import 'package:geode/screens/dashboard/widgets/priority_task.dart';
 import 'package:geode/screens/dashboard/widgets/productivity_chart.dart';
+import 'package:geode/screens/dashboard/widgets/task_horizon.dart';
 import 'package:geode/screens/dashboard/widgets/task_summary_card.dart';
 import 'package:geode/screens/dashboard/widgets/bottom_nav_bar.dart';
+import 'package:geode/screens/dashboard/widgets/add_task.dart';
 
 class Dashboard extends StatefulWidget {
   const Dashboard({super.key});
@@ -60,11 +62,12 @@ class _DashboardScreenState extends State<Dashboard>
       ),
       floatingActionButton: FloatingActionButton(
         onPressed: () {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text("Add New Task Tapped!"),
-              duration: Duration(seconds: 1),
-            ),
+          showModalBottomSheet(
+            context: context,
+            isScrollControlled:
+                true, // Allows the sheet to be taller than half the screen
+            backgroundColor: Colors.transparent,
+            builder: (context) => const AddTask(),
           );
         },
         backgroundColor: AppColors.highlight,
@@ -105,27 +108,27 @@ class _DashboardScreenState extends State<Dashboard>
     return ListView(
       children: [
         GestureDetector(
-        onTap: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => const PriorityZone()),
-          );
-        },
-        child: const PriorityTask(),
-      ),
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(builder: (context) => const PriorityZone()),
+            );
+          },
+          child: const PriorityTask(),
+        ),
         const SizedBox(height: 20),
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
             TaskSummaryCard(
               count: "16",
-              label: "TO Do",
+              label: "To Do",
               color: Colors.orange.shade300,
             ),
             TaskSummaryCard(
               count: "32",
               label: "In Progress",
-              color: Colors.lightBlue.shade300,
+              color: Colors.blue.shade300,
             ),
             TaskSummaryCard(
               count: "8",
@@ -133,6 +136,34 @@ class _DashboardScreenState extends State<Dashboard>
               color: Colors.green.shade300,
             ),
           ],
+        ),
+        const SizedBox(height: 30),
+        ElevatedButton(
+          style: ElevatedButton.styleFrom(
+            backgroundColor: AppColors.darkGrey,
+            padding: const EdgeInsets.symmetric(vertical: 16),
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+          ),
+          onPressed: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                  builder: (context) => const TaskHorizonScreen()),
+            );
+          },
+          child: const Row(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              Icon(Icons.calendar_today, color: AppColors.secondaryAccent),
+              SizedBox(width: 10),
+              Text(
+                "Task Horizon",
+                style: AppTextStyles.body,
+              ),
+            ],
+          ),
         ),
       ],
     );
