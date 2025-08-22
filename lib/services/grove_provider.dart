@@ -1,26 +1,35 @@
-import 'package:flutter/material.dart';
-import 'package:shared_preferences/shared_preferences.dart';
+import 'package:flutter/foundation.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import '../models/grove.dart';
 
-class GroveProvider with ChangeNotifier {
-  int _completedSessions = 0;
-  static const String _sessionKey = 'completedSessions';
+class GroveProvider extends ChangeNotifier {
+  late Box<Grove> _groveBox;
+  List<Grove> _sessions = [];
 
-  int get completedSessions => _completedSessions;
+  List<Grove> get sessions => List.unmodifiable(_sessions);
+  int get completedSessions => _sessions.length;
 
   GroveProvider() {
+    _init();
+  }
+
+  Future<void> _init() async {
+    _groveBox = await Hive.openBox<Grove>('grove');
     _loadSessions();
   }
 
-  Future<void> _loadSessions() async {
-    final prefs = await SharedPreferences.getInstance();
-    _completedSessions = prefs.getInt(_sessionKey) ?? 0;
+  void _loadSessions() {
+    _sessions = _groveBox.values.toList();
     notifyListeners();
   }
 
-  Future<void> addSession() async {
-    final prefs = await SharedPreferences.getInstance();
-    _completedSessions++;
-    await prefs.setInt(_sessionKey, _completedSessions);
+  Future<void> addSession(int duration) async {
+    final session = Grove(
+      completedAt: DateTime.now(),
+      duration: duration,
+    );
+    await _groveBox.put(session.id, session);
+    _sessions.add(session);
     notifyListeners();
   }
 }

@@ -17,39 +17,19 @@ class DashboardHeader extends StatelessWidget {
               style: AppTextStyles.header.copyWith(fontWeight: FontWeight.w300),
             ),
             const Text(
-              "Quantix! ",
+              "Quantix!",
               style: AppTextStyles.header,
             ),
           ],
         ),
-        Image(
-          image: NetworkImage("https://i.pravatar.cc/150?img=3"),
+        Container(
           width: 40,
           height: 40,
-          fit: BoxFit.cover,
-          errorBuilder: (context, error, stackTrace) {
-            return Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                shape: BoxShape.circle,
-              ),
-              child: Icon(Icons.person, color: Colors.grey[600]),
-            );
-          },
-          loadingBuilder: (context, child, loadingProgress) {
-            if (loadingProgress == null) return child;
-            return Container(
-              width: 40,
-              height: 40,
-              decoration: BoxDecoration(
-                color: Colors.grey[300],
-                shape: BoxShape.circle,
-              ),
-              child: Center(child: CircularProgressIndicator()),
-            );
-          },
+          decoration: BoxDecoration(
+            color: Colors.grey[800],
+            shape: BoxShape.circle,
+          ),
+          child: Icon(Icons.person_outline, color: Colors.grey[300]),
         ),
       ],
     );

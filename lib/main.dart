@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
 import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
+import 'package:geode/models/grove.dart';
 import 'package:geode/services/blocker_provider.dart';
 import 'package:geode/services/grove_provider.dart';
 import 'package:hive/hive.dart';
@@ -31,6 +32,8 @@ void main() async {
     // Register the generated adapters
   Hive.registerAdapter(TaskStatusAdapter());
   Hive.registerAdapter(TaskAdapter());
+  Hive.registerAdapter(GroveAdapter());
+await Hive.openBox<Grove>('grove');
 
   runApp(
     MultiProvider(

@@ -1,4 +1,5 @@
 import 'dart:async';
+import 'dart:math' show min; // Replace the incorrect import with this
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:geode/services/grove_provider.dart';
@@ -56,7 +57,8 @@ class _TimerScreenState extends State<TimerScreen> {
         });
       } else {
         _timer?.cancel();
-        Provider.of<GroveProvider>(context, listen: false).addSession();
+        Provider.of<GroveProvider>(context, listen: false)
+            .addSession(_totalDuration.inMinutes);
         Provider.of<BlockerProvider>(context, listen: false)
             .deactivateBlocker();
 
@@ -104,51 +106,65 @@ class _TimerScreenState extends State<TimerScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Calculate progress for the CircularProgressIndicator.
     double progress = _isPlaying
         ? 1.0 - (_remainingTime.inSeconds / _totalDuration.inSeconds)
         : 0.0;
+
+    // Get screen size
+    final size = MediaQuery.of(context).size;
+    final timerSize = size.width < 600 ? size.width * 0.6 : 300.0;
 
     return Scaffold(
       backgroundColor: const Color(0xFF1F1D2B),
       body: SafeArea(
         child: Center(
-          child: Padding(
-            padding: const EdgeInsets.all(20.0),
-            child: Column(
-              mainAxisAlignment: MainAxisAlignment.spaceAround,
-              children: [
-                _buildHeader(),
-                Stack(
-                  alignment: Alignment.center,
+          child: SingleChildScrollView(
+            // Add scrolling support
+            child: Padding(
+              padding: const EdgeInsets.all(20.0),
+              child: ConstrainedBox(
+                // Constrain maximum width
+                constraints: const BoxConstraints(maxWidth: 600),
+                child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
                   children: [
-                    SizedBox(
-                      width: 255,
-                      height: 255,
-                      child: CircularProgressIndicator(
-                        value: progress,
-                        strokeWidth: 8,
-                        color: Color(0xFF2E7D32),
-                        backgroundColor: Colors.white.withOpacity(0.3),
-                        strokeCap: StrokeCap.round,
-                      ),
-                    ),
-                    Padding(
-                      padding: const EdgeInsets.all(12.0),
-                      child: ClipOval(
-                        child: Image.asset(
-                          "assets/images/frames/frame_($_currentFrame).gif",
-                          width: 240,
-                          height: 240,
-                          fit: BoxFit.cover,
-                          gaplessPlayback: true,
+                    SizedBox(height: size.height * 0.05),
+                    _buildHeader(),
+                    SizedBox(height: size.height * 0.05),
+                    Stack(
+                      alignment: Alignment.center,
+                      children: [
+                        SizedBox(
+                          width: timerSize,
+                          height: timerSize,
+                          child: CircularProgressIndicator(
+                            value: progress,
+                            strokeWidth: 8,
+                            color: const Color(0xFF2E7D32),
+                            backgroundColor: Colors.white.withOpacity(0.3),
+                            strokeCap: StrokeCap.round,
+                          ),
                         ),
-                      ),
+                        Padding(
+                          padding: const EdgeInsets.all(12.0),
+                          child: ClipOval(
+                            child: Image.asset(
+                              "assets/images/frames/frame_($_currentFrame).gif",
+                              width: timerSize - 15,
+                              height: timerSize - 15,
+                              fit: BoxFit.cover,
+                              gaplessPlayback: true,
+                            ),
+                          ),
+                        ),
+                      ],
                     ),
+                    SizedBox(height: size.height * 0.05),
+                    _buildTimerControls(),
+                    SizedBox(height: size.height * 0.05),
                   ],
                 ),
-                _buildTimerControls(),
-              ],
+              ),
             ),
           ),
         ),
@@ -180,85 +196,92 @@ class _TimerScreenState extends State<TimerScreen> {
     );
   }
 
+  // Update _buildTimerControls() for better responsiveness
   Widget _buildTimerControls() {
-    return Column(
-      children: [
-        Text(
-          _formatDuration(_remainingTime),
-          style: const TextStyle(
-            color: Colors.white,
-            fontSize: 60,
-            fontWeight: FontWeight.w300,
-            letterSpacing: 1.5,
-          ),
-        ),
-        const SizedBox(height: 20),
-        Slider(
-          value: _totalDuration.inMinutes.toDouble(),
-          min: 1,
-          max: 60,
-          divisions: 59,
-          // label: "${_totalDuration.inMinutes} minutes",
-          activeColor: Color(0xFF64FFDA),
-          inactiveColor: Colors.white.withOpacity(0.3),
-          thumbColor: const Color(0xFF64FFDA),
-          overlayColor:
-              WidgetStateProperty.all(const Color(0xFF64FFDA).withOpacity(0.2)),
-          onChanged: _isPlaying
-              ? null
-              : (value) {
-                  HapticFeedback.selectionClick();
-                  setState(() {
-                    _totalDuration = Duration(minutes: value.toInt());
-                    _remainingTime = _totalDuration;
-                  });
-                },
-        ),
-        // Timer label below slider
-        Text(
-          "${_totalDuration.inMinutes} minutes",
-          style: TextStyle(
-            color: Colors.white.withOpacity(0.8),
-            fontSize: 16,
-          ),
-        ),
-        const SizedBox(height: 20),
-        Container(
-          width: 200,
-          height: 50,
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(15),
-            boxShadow: [
-              BoxShadow(
-                color: (_isPlaying
-                        ? const Color(0xFFFF756D)
-                        : const Color(0xFF2E7D32))
-                    .withOpacity(0.3),
-                blurRadius: 8,
-                offset: const Offset(0, 4),
-              ),
-            ],
-          ),
-          child: ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor:
-                  _isPlaying ? Color(0xFFFF756D) : const Color(0xFF2E7D32),
-              foregroundColor:
-                  _isPlaying ? Colors.white : const Color(0xFF4A7C59),
-              shape: RoundedRectangleBorder(
-                borderRadius: BorderRadius.circular(15),
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        final isSmallScreen = constraints.maxWidth < 400;
+
+        return Column(
+          children: [
+            Text(
+              _formatDuration(_remainingTime),
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: isSmallScreen ? 40 : 60,
+                fontWeight: FontWeight.w300,
+                letterSpacing: 1.5,
               ),
             ),
-            onPressed: _isPlaying ? _giveUp : _startTimer,
-            child: Text(_isPlaying ? "Give Up" : "Start Focusing",
-                style: const TextStyle(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: Color(0xFFE0E0E0),
-                )),
-          ),
-        ),
-      ],
+            const SizedBox(height: 20),
+            SizedBox(
+              width: constraints.maxWidth * 0.8,
+              child: Slider(
+                value: _totalDuration.inMinutes.toDouble(),
+                min: 1,
+                max: 60,
+                divisions: 59,
+                activeColor: const Color(0xFF64FFDA),
+                inactiveColor: Colors.white.withOpacity(0.3),
+                thumbColor: const Color(0xFF64FFDA),
+                onChanged: _isPlaying
+                    ? null
+                    : (value) {
+                        HapticFeedback.selectionClick();
+                        setState(() {
+                          _totalDuration = Duration(minutes: value.toInt());
+                          _remainingTime = _totalDuration;
+                        });
+                      },
+              ),
+            ),
+            Text(
+              "${_totalDuration.inMinutes} minutes",
+              style: TextStyle(
+                color: Colors.white.withOpacity(0.8),
+                fontSize: isSmallScreen ? 14 : 16,
+              ),
+            ),
+            const SizedBox(height: 20),
+            Container(
+              width: min(200, constraints.maxWidth * 0.8),
+              height: 50,
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(15),
+                boxShadow: [
+                  BoxShadow(
+                    color: (_isPlaying
+                            ? const Color(0xFFFF756D)
+                            : const Color(0xFF2E7D32))
+                        .withOpacity(0.3),
+                    blurRadius: 8,
+                    offset: const Offset(0, 4),
+                  ),
+                ],
+              ),
+              child: ElevatedButton(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: _isPlaying
+                      ? const Color(0xFFFF756D)
+                      : const Color(0xFF2E7D32),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(15),
+                  ),
+                ),
+                onPressed: _isPlaying ? _giveUp : _startTimer,
+                child: Text(
+                  _isPlaying ? "Give Up" : "Start Focusing",
+                  style: TextStyle(
+                    fontSize: isSmallScreen ? 16 : 18,
+                    fontWeight: FontWeight.bold,
+                    color: const Color(0xFFE0E0E0),
+                  ),
+                ),
+              ),
+            ),
+          ],
+        );
+      },
     );
   }
 }
