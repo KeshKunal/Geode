@@ -1,12 +1,12 @@
 import 'package:flutter/foundation.dart';
-import 'package:hive/hive.dart'; // Import Hive
+import 'package:hive/hive.dart';
 import '../models/task.dart';
 
 class TaskManager extends ChangeNotifier {
   final List<Task> _tasks = [];
-  late Box<Task> _taskBox; // A variable to hold our Hive box
+  late Box<Task> _taskBox;
 
-  List<Task> get tasks => _tasks;
+  List<Task> get tasks => List.unmodifiable(_tasks);
 
   // A constructor to load data when the TaskManager is first created
   TaskManager() {
@@ -22,38 +22,33 @@ class TaskManager extends ChangeNotifier {
 
   void addTask(Task task) {
     _tasks.add(task);
-    _updateDatabase(); // Save changes to Hive
+    _taskBox.put(task.id, task);
     notifyListeners();
   }
 
-  // A new method to update a task's status
-  void updateTaskStatus(String id, TaskStatus newStatus) {
-    // Changed from Task to String id
-    final taskIndex = _tasks.indexWhere((task) => task.id == id);
-    if (taskIndex != -1) {
-      final task = _tasks[taskIndex];
-      _tasks[taskIndex] = Task(
-        name: task.name,
-        details: task.details,
-        deadline: task.deadline,
-        isPriority: task.isPriority,
-        status: newStatus,
-      );
-      _updateDatabase();
+  void updateTask(Task updatedTask) {
+    final index = _tasks.indexWhere((t) => t.id == updatedTask.id);
+    if (index != -1) {
+      _tasks[index] = updatedTask;
+      _taskBox.put(updatedTask.id, updatedTask);
       notifyListeners();
     }
   }
 
-  // A new method to delete a task
-  void deleteTask(Task task) {
-    _tasks.remove(task);
-    _updateDatabase();
-    notifyListeners();
+  void updateTaskStatus(String taskId, TaskStatus newStatus) {
+    final index = _tasks.indexWhere((t) => t.id == taskId);
+    if (index != -1) {
+      final updatedTask = _tasks[index].copyWith(status: newStatus);
+      _tasks[index] = updatedTask;
+      _taskBox.put(taskId, updatedTask);
+      notifyListeners();
+      
+    }
   }
 
-  // A private helper method to save the current list to the Hive box
-  void _updateDatabase() {
-    _taskBox.clear(); // Clear the box first
-    _taskBox.addAll(_tasks); // Add all current tasks
+  void deleteTask(String taskId) {
+    _tasks.removeWhere((t) => t.id == taskId);
+    _taskBox.delete(taskId);
+    notifyListeners();
   }
 }

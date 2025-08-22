@@ -6,7 +6,8 @@ import 'package:geode/providers/task_manager.dart';
 import 'package:provider/provider.dart';
 
 class AddTask extends StatefulWidget {
-  const AddTask({super.key});
+  final Task? task; // Add this line
+  const AddTask({super.key, this.task}); // Update constructor
 
   @override
   State<AddTask> createState() => _AddTaskState();
@@ -17,6 +18,22 @@ class _AddTaskState extends State<AddTask> {
   final TextEditingController _detailsController = TextEditingController();
   bool _isPriority = false;
   DateTime? _selectedDate;
+
+  // Add these variables for validation
+  bool _isNameEmpty = false;
+  bool _isDateEmpty = false;
+
+  @override
+  void initState() {
+    super.initState();
+    // Initialize fields if editing an existing task
+    if (widget.task != null) {
+      _nameController.text = widget.task!.name;
+      _detailsController.text = widget.task!.details;
+      _isPriority = widget.task!.isPriority;
+      _selectedDate = widget.task!.deadline;
+    }
+  }
 
   @override
   void dispose() {
@@ -66,32 +83,49 @@ class _AddTaskState extends State<AddTask> {
 
   @override
   Widget build(BuildContext context) {
+    final isEditing = widget.task != null;
+    final titleText = isEditing ? "Edit Task" : "Add New Task";
+    final buttonText = isEditing ? "Update" : "Create";
+
     return Container(
       padding: EdgeInsets.fromLTRB(
           20, 20, 20, MediaQuery.of(context).viewInsets.bottom + 20),
       decoration: const BoxDecoration(
-          color: AppColors.darkGrey,
-          borderRadius: BorderRadius.only(
-            topLeft: Radius.circular(20),
-            topRight: Radius.circular(20),
-          )),
+        color: AppColors.darkGrey,
+        borderRadius: BorderRadius.only(
+          topLeft: Radius.circular(20),
+          topRight: Radius.circular(20),
+        ),
+      ),
       child: Column(
-        mainAxisSize: MainAxisSize.min, 
+        mainAxisSize: MainAxisSize.min,
         children: [
-          const Text("Add New Task", style: AppTextStyles.subheading),
+          Text(titleText, style: AppTextStyles.subheading),
           const SizedBox(height: 20),
           TextField(
-            controller: _nameController, 
-            decoration: const InputDecoration(
+            controller: _nameController,
+            decoration: InputDecoration(
               labelText: 'Task Name',
-              border: OutlineInputBorder(),
-              labelStyle: TextStyle(color: Colors.grey),
+              border: const OutlineInputBorder(),
+              labelStyle: TextStyle(
+                color: _isNameEmpty ? Colors.red : Colors.grey,
+              ),
+              // Add error text if validation fails
+              errorText: _isNameEmpty ? '*required' : null,
             ),
             style: AppTextStyles.body,
+            onChanged: (value) {
+              // Clear error when user starts typing
+              if (_isNameEmpty) {
+                setState(() {
+                  _isNameEmpty = false;
+                });
+              }
+            },
           ),
           const SizedBox(height: 20),
           TextField(
-            controller: _detailsController, 
+            controller: _detailsController,
             decoration: const InputDecoration(
               labelText: 'Notes (Optional)',
               border: OutlineInputBorder(),
@@ -103,23 +137,42 @@ class _AddTaskState extends State<AddTask> {
           const SizedBox(height: 15),
           Row(
             children: [
-              const Text("Due Date", style: AppTextStyles.body),
+              Text(
+                "Due Date",
+                style: AppTextStyles.body.copyWith(
+                  color: _isDateEmpty ? Colors.red : null,
+                ),
+              ),
               const Spacer(),
               OutlinedButton.icon(
                 onPressed: () => _selectDate(context),
                 icon: const Icon(Icons.calendar_today),
                 label: Text(_formatDate(_selectedDate)),
                 style: OutlinedButton.styleFrom(
-                  foregroundColor: AppColors.secondaryAccent,
+                  foregroundColor:
+                      _isDateEmpty ? Colors.red : AppColors.secondaryAccent,
                   side: BorderSide(
-                    color: _selectedDate != null
-                        ? AppColors.highlight
-                        : Colors.grey,
+                    color: _isDateEmpty
+                        ? Colors.red
+                        : _selectedDate != null
+                            ? AppColors.highlight
+                            : Colors.grey,
                   ),
                 ),
               ),
             ],
           ),
+          if (_isDateEmpty)
+            Padding(
+              padding: const EdgeInsets.only(top: 4),
+              child: Text(
+                '*required',
+                style: TextStyle(
+                  color: Colors.red,
+                  fontSize: 12,
+                ),
+              ),
+            ),
           const SizedBox(height: 20),
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -132,7 +185,7 @@ class _AddTaskState extends State<AddTask> {
                     _isPriority = newval;
                   });
                 },
-                activeColor: const Color(0xFFFF5252),
+                activeColor: AppColors.highlight,
                 trackOutlineColor: MaterialStateProperty.all(Colors.grey),
               ),
             ],
@@ -146,27 +199,38 @@ class _AddTaskState extends State<AddTask> {
                 padding: const EdgeInsets.symmetric(vertical: 16),
               ),
               onPressed: () {
-                if (_nameController.text.isEmpty || _selectedDate == null) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                        content: Text('Please fill required fields')),
-                  );
-                  return;
+                // Update validation states
+                setState(() {
+                  _isNameEmpty = _nameController.text.isEmpty;
+                  _isDateEmpty = _selectedDate == null;
+                });
+
+                // Only proceed if validation passes
+                if (!_isNameEmpty && !_isDateEmpty) {
+                  final taskManager = context.read<TaskManager>();
+                  if (widget.task != null) {
+                    final updatedTask = widget.task!.copyWith(
+                      name: _nameController.text,
+                      details: _detailsController.text,
+                      deadline: _selectedDate!,
+                      isPriority: _isPriority,
+                    );
+                    taskManager.updateTask(updatedTask);
+                  } else {
+                    final newTask = Task(
+                      name: _nameController.text,
+                      details: _detailsController.text,
+                      deadline: _selectedDate!,
+                      isPriority: _isPriority,
+                    );
+                    taskManager.addTask(newTask);
+                  }
+                  Navigator.pop(context);
                 }
-
-                final newTask = Task(
-                  name: _nameController.text,
-                  details: _detailsController.text,
-                  deadline: _selectedDate!,
-                  isPriority: _isPriority,
-                );
-
-                context.read<TaskManager>().addTask(newTask);
-                Navigator.pop(context);
               },
-              child: const Text(
-                "Create",
-                style: TextStyle(color: AppColors.primaryBackground),
+              child: Text(
+                buttonText,
+                style: const TextStyle(color: AppColors.primaryBackground),
               ),
             ),
           )

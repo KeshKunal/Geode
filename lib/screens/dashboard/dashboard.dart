@@ -12,6 +12,7 @@ import 'package:geode/screens/dashboard/widgets/task_horizon.dart';
 import 'package:geode/screens/dashboard/widgets/task_summary_card.dart';
 import 'package:geode/screens/dashboard/widgets/bottom_nav_bar.dart';
 import 'package:geode/screens/dashboard/widgets/add_task.dart';
+import 'package:geode/screens/dashboard/task_list_screen.dart';
 import 'package:provider/provider.dart';
 
 class Dashboard extends StatefulWidget {
@@ -136,7 +137,6 @@ class _DashboardScreenState extends State<Dashboard>
         const SizedBox(height: 20),
         Consumer<TaskManager>(
           builder: (context, taskManager, child) {
-            // Filter tasks based on their status
             final toDoTasks = taskManager.tasks
                 .where((task) => task.status == TaskStatus.toDo)
                 .toList();
@@ -150,20 +150,67 @@ class _DashboardScreenState extends State<Dashboard>
             return Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                TaskSummaryCard(
-                  count: toDoTasks.length.toString(),
-                  label: "To Do",
-                  color: Colors.orange.shade300,
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => TaskListScreen(
+                            title: 'To Do Tasks',
+                            tasks: toDoTasks,
+                          ),
+                        ),
+                      );
+                    },
+                    child: TaskSummaryCard(
+                      count: toDoTasks.length.toString(),
+                      label: "To Do",
+                      color: Colors.orange.shade300,
+                    ),
+                  ),
                 ),
-                TaskSummaryCard(
-                  count: inProgressTasks.length.toString(),
-                  label: "In Progress",
-                  color: Colors.blue.shade300,
+                const SizedBox(width: 8),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => TaskListScreen(
+                            title: 'In Progress Tasks',
+                            tasks: inProgressTasks,
+                          ),
+                        ),
+                      );
+                    },
+                    child: TaskSummaryCard(
+                      count: inProgressTasks.length.toString(),
+                      label: "In Progress",
+                      color: Colors.blue.shade300,
+                    ),
+                  ),
                 ),
-                TaskSummaryCard(
-                  count: completedTasks.length.toString(),
-                  label: "Completed",
-                  color: Colors.green.shade300,
+                const SizedBox(width: 8),
+                Expanded(
+                  child: GestureDetector(
+                    onTap: () {
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => TaskListScreen(
+                            title: 'Completed Tasks',
+                            tasks: completedTasks,
+                          ),
+                        ),
+                      );
+                    },
+                    child: TaskSummaryCard(
+                      count: completedTasks.length.toString(),
+                      label: "Completed",
+                      color: Colors.green.shade300,
+                    ),
+                  ),
                 ),
               ],
             );

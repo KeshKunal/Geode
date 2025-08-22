@@ -1,4 +1,3 @@
-import 'package:fl_chart/fl_chart.dart';
 import 'package:flutter/material.dart';
 import 'package:geode/core/constants/app_colors.dart';
 import 'package:geode/core/constants/app_text_styles.dart';
@@ -9,6 +8,72 @@ class ProductivityChart extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: AppColors.darkGrey,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          const Icon(
+            Icons.engineering_rounded,
+            size: 48,
+            color: AppColors.highlight,
+          ),
+          const SizedBox(height: 16),
+          Text(
+            "Time Machine Under Construction!",
+            style: AppTextStyles.subheading.copyWith(
+              color: AppColors.highlight,
+            ),
+          ),
+          const SizedBox(height: 8),
+          Text(
+            "Our productivity stats are currently training with Doctor Strange. "
+            "They'll be back once they master the Time Stone!",
+            textAlign: TextAlign.center,
+            style: AppTextStyles.body_grey.copyWith(
+              height: 1.5,
+            ),
+          ),
+          const SizedBox(height: 20),
+          Container(
+            padding: const EdgeInsets.symmetric(
+              horizontal: 12,
+              vertical: 6,
+            ),
+            decoration: BoxDecoration(
+              color: AppColors.highlight.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(20),
+            ),
+            child: const Row(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                Icon(
+                  Icons.upcoming_rounded,
+                  size: 16,
+                  color: AppColors.highlight,
+                ),
+                SizedBox(width: 8),
+                Text(
+                  "Coming Soon",
+                  style: TextStyle(
+                    color: AppColors.highlight,
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+/* Original chart code preserved for future reference
+   Container(
       padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
         color: AppColors.darkGrey,
@@ -72,4 +137,5 @@ class ProductivityChart extends StatelessWidget {
       );
     });
   }
-}
+}.
+*/

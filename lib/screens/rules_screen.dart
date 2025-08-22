@@ -13,7 +13,7 @@ class RulesScreen extends StatelessWidget {
     return Scaffold(
       backgroundColor: const Color(0xFF1F1D2B),
       appBar: AppBar(
-        title: const Text('Blocking Rules', style: TextStyle(color: Colors.white)),
+        title: const Text('Make your own Rules', style: TextStyle(color: Colors.white)),
         backgroundColor: const Color(0xFF252836),
       ),
       body: Padding(
