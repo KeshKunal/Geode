@@ -302,3 +302,36 @@ class TaskCard extends StatelessWidget {
     );
   }
 }
+
+// Add this ErrorBoundary widget
+class ErrorBoundary extends StatelessWidget {
+  final Widget child;
+
+  const ErrorBoundary({super.key, required this.child});
+
+  @override
+  Widget build(BuildContext context) {
+    return Builder(
+      builder: (context) {
+        try {
+          return child;
+        } catch (e, stackTrace) {
+          debugPrint('Error in TaskCard: $e\n$stackTrace');
+          return Container(
+            padding: const EdgeInsets.all(8),
+            margin: const EdgeInsets.only(bottom: 8),
+            decoration: BoxDecoration(
+              color: Colors.red.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.red.withOpacity(0.3)),
+            ),
+            child: const Text(
+              'Error loading task',
+              style: TextStyle(color: Colors.red),
+            ),
+          );
+        }
+      },
+    );
+  }
+}

@@ -8,6 +8,7 @@ import 'package:geode/screens/dashboard/widgets/daily_goal.dart';
 import 'package:geode/screens/dashboard/widgets/header.dart';
 import 'package:geode/screens/dashboard/widgets/priority_task.dart';
 import 'package:geode/screens/dashboard/widgets/productivity_chart.dart';
+import 'package:geode/screens/dashboard/widgets/task_card.dart';
 import 'package:geode/screens/dashboard/widgets/task_horizon.dart';
 import 'package:geode/screens/dashboard/widgets/task_summary_card.dart';
 import 'package:geode/screens/dashboard/widgets/bottom_nav_bar.dart';
@@ -68,7 +69,7 @@ class _DashboardScreenState extends State<Dashboard>
                       controller: _tabController,
                       children: [
                         _buildOverviewTab(isWebView),
-                        _buildProductivityTab(isWebView),
+                        _buildProductivityTab(),
                       ],
                     ),
                   ),
@@ -184,53 +185,69 @@ class _DashboardScreenState extends State<Dashboard>
   }
 
   Widget _buildTaskSummaries() {
-    return Consumer<TaskManager>(
-      builder: (context, taskManager, child) {
-        final toDoTasks = taskManager.tasks
-            .where((task) => task.status == TaskStatus.toDo)
-            .toList();
-        final inProgressTasks = taskManager.tasks
-            .where((task) => task.status == TaskStatus.inProgress)
-            .toList();
-        final completedTasks = taskManager.tasks
-            .where((task) => task.status == TaskStatus.completed)
-            .toList();
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return Consumer<TaskManager>(
+          builder: (context, taskManager, child) {
+            final toDoTasks = taskManager.tasks
+                .where((task) => task.status == TaskStatus.toDo)
+                .toList();
+            final inProgressTasks = taskManager.tasks
+                .where((task) => task.status == TaskStatus.inProgress)
+                .toList();
+            final completedTasks = taskManager.tasks
+                .where((task) => task.status == TaskStatus.completed)
+                .toList();
 
-        return Wrap(
-          spacing: 8,
-          runSpacing: 8,
-          children: [
-            _buildTaskSummaryCard(
-              'To Do Tasks',
-              toDoTasks,
-              Colors.orange.shade300,
-              'To Do',
-            ),
-            _buildTaskSummaryCard(
-              'In Progress Tasks',
-              inProgressTasks,
-              Colors.blue.shade300,
-              'In Progress',
-            ),
-            _buildTaskSummaryCard(
-              'Completed Tasks',
-              completedTasks,
-              Colors.green.shade300,
-              'Completed',
-            ),
-          ],
+            // Calculate responsive tile width for Wrap (no Expanded)
+            final maxW = constraints.maxWidth;
+            final columns =
+                maxW >= 520 ? 2 : 1; // two tiles on wider right pane
+            final gap = 8.0;
+            final tileWidth = (maxW - (columns - 1) * gap) / columns;
+
+            return Wrap(
+              spacing: gap,
+              runSpacing: gap,
+              children: [
+                _buildTaskSummaryTile(
+                  title: 'To Do Tasks',
+                  tasks: toDoTasks,
+                  color: Colors.orange.shade300,
+                  label: 'To Do',
+                  width: tileWidth,
+                ),
+                _buildTaskSummaryTile(
+                  title: 'In Progress Tasks',
+                  tasks: inProgressTasks,
+                  color: Colors.blue.shade300,
+                  label: 'In Progress',
+                  width: tileWidth,
+                ),
+                _buildTaskSummaryTile(
+                  title: 'Completed Tasks',
+                  tasks: completedTasks,
+                  color: Colors.green.shade300,
+                  label: 'Completed',
+                  width: tileWidth,
+                ),
+              ],
+            );
+          },
         );
       },
     );
   }
 
-  Widget _buildTaskSummaryCard(
-    String title,
-    List<Task> tasks,
-    Color color,
-    String label,
-  ) {
-    return Expanded(
+  Widget _buildTaskSummaryTile({
+    required String title,
+    required List<Task> tasks,
+    required Color color,
+    required String label,
+    required double width,
+  }) {
+    return SizedBox(
+      width: width,
       child: GestureDetector(
         onTap: () {
           Navigator.push(
@@ -278,31 +295,62 @@ class _DashboardScreenState extends State<Dashboard>
     );
   }
 
-  Widget _buildProductivityTab(bool isWebView) {
+  Widget _buildProductivityTab() {
     return LayoutBuilder(
       builder: (context, constraints) {
         return Container(
+          width: double.infinity,
           constraints: BoxConstraints(
-            maxWidth: isWebView ? 1200 : double.infinity,
-            minHeight: 100, // Minimum height to prevent collapse
+            minHeight: constraints.maxHeight,
           ),
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                // Your task cards here
-                SizedBox(
-                  width: double.infinity,
-                  child: Wrap(
-                    spacing: 16,
-                    runSpacing: 16,
-                    alignment: WrapAlignment.start,
+          child: Consumer<TaskManager>(
+            builder: (context, taskManager, child) {
+              return SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
                     children: [
-                      // Your task cards
+                      // Add productivity chart at the top
+                      const ProductivityChart(),
+
+                      const SizedBox(height: 24),
+
+                      // Task count header
+                      Text(
+                        'Tasks (${taskManager.tasks.length})',
+                        style: AppTextStyles.subheading.copyWith(
+                          color: Colors.white,
+                          fontSize: 18,
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+
+                      // Task list or empty state
+                      if (taskManager.tasks.isEmpty)
+                        const Center(
+                          child: Padding(
+                            padding: EdgeInsets.symmetric(vertical: 32.0),
+                            child: Text(
+                              'No tasks yet',
+                              style: TextStyle(color: Colors.white54),
+                            ),
+                          ),
+                        )
+                      else
+                        ListView.builder(
+                          shrinkWrap: true,
+                          physics: const NeverScrollableScrollPhysics(),
+                          itemCount: taskManager.tasks.length,
+                          itemBuilder: (context, index) {
+                            final task = taskManager.tasks[index];
+                            return TaskCard(task: task);
+                          },
+                        ),
                     ],
                   ),
                 ),
-              ],
-            ),
+              );
+            },
           ),
         );
       },

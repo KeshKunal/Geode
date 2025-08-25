@@ -1,5 +1,3 @@
-import 'dart:async';
-
 import 'package:flutter/material.dart';
 import 'package:geode/screens/dashboard/dashboard_test.dart';
 import 'package:geode/screens/main_screen.dart';

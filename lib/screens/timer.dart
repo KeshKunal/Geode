@@ -6,6 +6,7 @@ import 'package:geode/services/grove_provider.dart';
 import 'package:provider/provider.dart';
 import 'package:geode/services/blocker_provider.dart';
 import 'package:geode/services/blocker_service.dart';
+import 'package:audioplayers/audioplayers.dart';
 
 class TimerScreen extends StatefulWidget {
   const TimerScreen({super.key});
@@ -28,12 +29,57 @@ class _TimerScreenState extends State<TimerScreen> {
   final int _totalFrames = 427;
   int _currentFrame = 0; // holds current frame
 
-  // --- LIFECYCLE METHODS ---
+  // Audio
+  final AudioPlayer _player = AudioPlayer();
+  bool _audioPrimed = false;
+  bool _isSoundPlaying = false; // NEW
+
+  @override
+  void initState() {
+    super.initState();
+    // Ensure the sound plays once by default (no loop)
+    _player.setReleaseMode(ReleaseMode.stop);
+    // When the sound finishes naturally, clear the overlay
+    _player.onPlayerComplete.listen((_) {
+      if (!mounted) return;
+      setState(() => _isSoundPlaying = false);
+    });
+  }
 
   @override
   void dispose() {
     _timer?.cancel();
+    _player.dispose();
     super.dispose();
+  }
+
+  // --- AUDIO LOGIC ---
+
+  Future<void> _primeAudioEngine() async {
+    if (_audioPrimed) return;
+    try {
+      // Preload the asset so there’s no delay at completion (helps on web too)
+      await _player.setSource(AssetSource('audio/bamboo_beat.mp3'));
+      _audioPrimed = true;
+    } catch (_) {}
+  }
+
+  Future<void> _playCompletionSound() async {
+    try {
+      await _player.stop();
+      await _player.play(AssetSource('audio/bamboo_beat.mp3'));
+      if (mounted) setState(() => _isSoundPlaying = true); // show tap-overlay
+    } catch (e) {
+      debugPrint('Audio play failed: $e');
+    }
+  }
+
+  Future<void> _stopSoundIfPlaying() async {
+    if (!_isSoundPlaying) return;
+    try {
+      await _player.stop();
+    } catch (_) {}
+    if (mounted) setState(() => _isSoundPlaying = false);
   }
 
   // --- TIMER LOGIC ---
@@ -49,6 +95,8 @@ class _TimerScreenState extends State<TimerScreen> {
       _currentFrame = 0;
     });
 
+    _primeAudioEngine(); // prepare audio after user gesture
+
     _timer = Timer.periodic(const Duration(seconds: 1), (timer) {
       if (_remainingTime.inSeconds > 0) {
         setState(() {
@@ -61,6 +109,8 @@ class _TimerScreenState extends State<TimerScreen> {
             .addSession(_totalDuration.inMinutes);
         Provider.of<BlockerProvider>(context, listen: false)
             .deactivateBlocker();
+
+        _playCompletionSound(); // play sound when timer completes
 
         setState(() {
           _isPlaying = false;
@@ -82,6 +132,7 @@ class _TimerScreenState extends State<TimerScreen> {
       _remainingTime = _totalDuration;
       _currentFrame = 0;
     });
+    _player.stop(); // ensure no leftover sound
   }
 
   // --- FRAME LOGIC ---
@@ -116,58 +167,73 @@ class _TimerScreenState extends State<TimerScreen> {
 
     return Scaffold(
       backgroundColor: const Color(0xFF1F1D2B),
-      body: SafeArea(
-        child: Center(
-          child: SingleChildScrollView(
-            // Add scrolling support
-            child: Padding(
-              padding: const EdgeInsets.all(20.0),
-              child: ConstrainedBox(
-                // Constrain maximum width
-                constraints: const BoxConstraints(maxWidth: 600),
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    SizedBox(height: size.height * 0.05),
-                    _buildHeader(),
-                    SizedBox(height: size.height * 0.05),
-                    Stack(
-                      alignment: Alignment.center,
+      body: Stack(
+        children: [
+          SafeArea(
+            child: Center(
+              child: SingleChildScrollView(
+                child: Padding(
+                  padding: const EdgeInsets.all(20.0),
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 600),
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
                       children: [
-                        SizedBox(
-                          width: timerSize,
-                          height: timerSize,
-                          child: CircularProgressIndicator(
-                            value: progress,
-                            strokeWidth: 8,
-                            color: const Color(0xFF2E7D32),
-                            backgroundColor: Colors.white.withOpacity(0.3),
-                            strokeCap: StrokeCap.round,
-                          ),
-                        ),
-                        Padding(
-                          padding: const EdgeInsets.all(12.0),
-                          child: ClipOval(
-                            child: Image.asset(
-                              "assets/images/frames/frame_($_currentFrame).gif",
-                              width: timerSize - 15,
-                              height: timerSize - 15,
-                              fit: BoxFit.cover,
-                              gaplessPlayback: true,
+                        SizedBox(height: size.height * 0.05),
+                        _buildHeader(),
+                        SizedBox(height: size.height * 0.05),
+                        // ...existing progress + image stack...
+                        Stack(
+                          alignment: Alignment.center,
+                          children: [
+                            SizedBox(
+                              width: timerSize,
+                              height: timerSize,
+                              child: CircularProgressIndicator(
+                                value: progress,
+                                strokeWidth: 8,
+                                color: const Color(0xFF2E7D32),
+                                backgroundColor: Colors.white.withOpacity(0.3),
+                                strokeCap: StrokeCap.round,
+                              ),
                             ),
-                          ),
+                            Padding(
+                              padding: const EdgeInsets.all(12.0),
+                              child: ClipOval(
+                                child: Image.asset(
+                                  "assets/images/frames/frame_($_currentFrame).gif",
+                                  width: timerSize - 15,
+                                  height: timerSize - 15,
+                                  fit: BoxFit.cover,
+                                  gaplessPlayback: true,
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
+                        SizedBox(height: size.height * 0.05),
+                        _buildTimerControls(),
+                        SizedBox(height: size.height * 0.05),
                       ],
                     ),
-                    SizedBox(height: size.height * 0.05),
-                    _buildTimerControls(),
-                    SizedBox(height: size.height * 0.05),
-                  ],
+                  ),
                 ),
               ),
             ),
           ),
-        ),
+
+          // Full-screen invisible tap-catcher while sound is playing
+          if (_isSoundPlaying)
+            Positioned.fill(
+              child: Material(
+                color: Colors.black
+                    .withOpacity(0.001), // invisible but catches taps
+                child: InkWell(
+                  onTap: _stopSoundIfPlaying,
+                ),
+              ),
+            ),
+        ],
       ),
     );
   }
