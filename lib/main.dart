@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/foundation.dart';
-import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
+// import 'package:android_alarm_manager_plus/android_alarm_manager_plus.dart';
 import 'package:geode/models/grove.dart';
 import 'package:geode/services/blocker_provider.dart';
 import 'package:geode/services/grove_provider.dart';
@@ -25,9 +25,9 @@ import 'app.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
-    await AndroidAlarmManager.initialize();
-  }
+  // if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+  //   await AndroidAlarmManager.initialize();
+  // }
   await Hive.initFlutter();
     // Register the generated adapters
   Hive.registerAdapter(TaskStatusAdapter());
