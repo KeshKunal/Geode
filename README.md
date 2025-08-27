@@ -1,4 +1,4 @@
-# Geode 🧘 - A Mindful Productivity App
+# Geode - A Mindful Productivity App
 
 Hey there! Welcome to the official repo for Geode, a little productivity app with a big idea. Thanks for stopping by to check out the code.
 
@@ -52,9 +52,8 @@ This project was built with a focus on simplicity, performance, and cross-platfo
 * **Cool UI Packages:**
     * `percent_indicator` for the beautiful circular timers.
     * `fl_chart` for the productivity graphs.
-
+      
 The project's code is organized as follows:
-
 * `models`: Defines the data models for tasks and grove sessions.
 * `providers`: Manages the app's state and data.
 * `screens`: Contains the UI for each screen in the app.
@@ -84,7 +83,7 @@ Want to run this on your own machine? It's easy!
 And that's it! Feel free to poke around, make changes, and learn from the code.
 
 ## Got Ideas or Found a Bug? 🐛💡
+
 This is a work in progress, and I'm always open to suggestions on how to make Geode even better. If you've got a cool idea or spot something wonky, feel free to open an issue here on GitHub. Let's make this a chill and useful tool together!
 
 Thanks for checking out Geode! Happy task managing! 😊
-
