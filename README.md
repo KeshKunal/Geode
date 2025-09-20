@@ -4,6 +4,7 @@ Hey there! Welcome to the official repo for Geode, a little productivity app wit
 
 **✨ Live Demo:** [**https://geode-app.netlify.app/**](https://geode-app.netlify.app/)
 
+![Geode Screen Interface](https://github.com/KeshKunal/Geode/blob/main/assets/screen_layouts/image.png)
 ---
 
 ## What's the Big Idea? 🤔
